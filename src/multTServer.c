@@ -234,7 +234,7 @@ worker_function(void* arg)
   
   printf("Thread: [%u] retrieved: %s\n",
 	 // this is silly
-	 (unsigned int)(uintptr_t)(this->id), this->filename);
+	 (unsigned int)(this->id), this->filename);
   
   /* **************************************************************
    * TODO:Record total time
