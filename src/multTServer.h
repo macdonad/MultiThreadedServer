@@ -19,11 +19,15 @@
  */
 #define ARRLOC(type, size) calloc(size, sizeof(type))
 
-
+#define ON_ERROR(expr) if(expr != 0) 
 /* **************************************************************
  * Prototypes
  * ************************************************************** */
 
+/**
+ * Read the fileanem
+ */
+void read_filename(void);
 
 /**
  * Handle a C-c
