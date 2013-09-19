@@ -182,28 +182,44 @@ read_filename(void)
 void
 handle_sigint(int sig)
 {
-  printf("\nBeginning shutdown\n");
-  file_worker_t* worker = last_worker;
-
-  while (file_worker_has_peer(worker))
-    {
-      ON_ERROR(file_worker_join(worker)) 
-	{
-	  printf("Error joining worker for \"%s\"\n", 
-		 (worker && worker->filename) ? worker->filename : "unknown");
-	  
-	}
-      file_worker_t* current = worker;
-      worker = worker->peer;
-      file_worker_free(current);
-    }
-  
-  /* **************************************************************
-   * TODO: Print usage stats here
-   * ************************************************************** */
-
-  free(input_buffer);
-  exit(0);
+  signal(SIGINT, handle_sigint);
+  static int sigint_count = 0;
+  switch(sigint_count) {
+  case 0:  {
+    sigint_count++;
+    printf("\nBeginning shutdown\n");
+    file_worker_t* worker = last_worker;
+    
+    while (file_worker_has_peer(worker))
+      {
+	ON_ERROR(file_worker_join(worker)) 
+	  {
+	    printf("Error joining worker for \"%s\"\n", 
+		   (worker && worker->filename) ? worker->filename : "unknown");
+	    
+	  }
+	file_worker_t* current = worker;
+	worker = worker->peer;
+	file_worker_free(current);
+      }
+    
+    /* **************************************************************
+     * TODO: Print usage stats here
+     * ************************************************************** */
+    
+    free(input_buffer);
+    exit(0);
+  }
+  case 1: {
+    sigint_count ++;
+    printf("\nPress C-c again to force quit\n");
+    break;
+  } 
+  default: {
+    free(input_buffer);
+    exit(0);
+  }
+  }
 }
 
 
