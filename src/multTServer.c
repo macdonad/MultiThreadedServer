@@ -70,11 +70,13 @@ file_worker_start(file_worker_t* this)
   return pthread_create(&(this->id), NULL, worker_function, this);
 }
 
+
 /**
  * Join a worker thread
  */
 int 
-file_worker_join(file_worker_t* this) {
+file_worker_join(file_worker_t* this)
+{
   if (this && this->id) return pthread_join(this->id, (void*)NULL);
   else return -1;
 }
@@ -83,7 +85,9 @@ file_worker_join(file_worker_t* this) {
 /**
  * Free a file worker
  */
-void file_worker_free(file_worker_t* this) {
+void
+file_worker_free(file_worker_t* this)
+{
   if (this) {
     if (this->filename && *(this->filename)) free(this->filename);
     free(this);
@@ -92,9 +96,12 @@ void file_worker_free(file_worker_t* this) {
 
 
 bool 
-file_worker_has_peer(file_worker_t* this) {
+file_worker_has_peer(file_worker_t* this)
+{
   return (this && this->peer);
 }
+
+
 /* **************************************************************
  * Globals
  * ************************************************************** */
