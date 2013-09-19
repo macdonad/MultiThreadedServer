@@ -18,13 +18,13 @@
 
 /**
  * File worker struct type.
- * 
+ *
  * ID: Cooresponding thread ID
  * FILENAME: Retrieval job file
  * ACTIVE: False if the retrieval completed or failed
  * PEER: Pointer to the other most recent worker created.
  */
-struct _file_worker_t 
+struct _file_worker_t
 {
   pthread_t id;
   char* filename;
@@ -88,7 +88,7 @@ main()
     worker->peer = last_worker;
     pthread_create(&(worker->id), NULL, worker_function, worker);
     last_worker = worker;
-  }  
+  }
   return 0;
 }
 
@@ -99,7 +99,7 @@ main()
  * On SIGINT, join all worker threads, print stats, and exit.
  */
 void
-handle_sigint(int sig) 
+handle_sigint(int sig)
 {
   printf("\nBeginning shutdown\n");
   file_worker_t* worker = last_worker;
@@ -121,8 +121,8 @@ handle_sigint(int sig)
  *
  * ARG: a pointer to this file_worker_t
  */
-void* 
-worker_function(void* arg) 
+void*
+worker_function(void* arg)
 {
   total_requests++;
   /* insert time crap here */
@@ -130,7 +130,7 @@ worker_function(void* arg)
   int rand_val = rand() % 10;
   sleep((rand_val >= 2) ? 1 : 7 + (rand() % 4));
   this->active = false;
-  printf("Thread: [%u] retrieved: %s\n", 
+  printf("Thread: [%u] retrieved: %s\n",
 	 // this is silly
 	 (unsigned int)(uintptr_t)(this->id), this->filename);
   free(this->filename);
