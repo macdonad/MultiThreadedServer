@@ -218,7 +218,7 @@ worker_function(void* arg)
   this->time_taken = sleep_time;
   this->active = false;
 
-  printf("Thread: [%u] retrieved: %s\n", CAST_UNSIGNED(this->id), this->filename);
+  printf("Thread: [%u] retrieved: %s\n", CAST_UNSIGNED_INT(this->id), this->filename);
   return NULL;
 }
 

@@ -18,9 +18,9 @@
  * Get rid of cast warning on OSX
  */
 #ifdef __APPLE__
-#define CAST_UNSIGNED(expr) ((unsigned int)(uintptr_t)(expr))
+#define CAST_UNSIGNED_INT(expr) ((unsigned int)(uintptr_t)(expr))
 #else
-#define CAST_UNSIGNED(expr) ((unsigned int)(expr))
+#define CAST_UNSIGNED_INT(expr) ((unsigned int)(expr))
 #endif
 
 /**
