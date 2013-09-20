@@ -1,3 +1,5 @@
+#ifndef _FILE_WORKER_H_
+#define _FILE_WORKER_H_
 
 /* **************************************************************
  * File worker type
@@ -52,4 +54,4 @@ file_worker_start(file_worker_t* this);
 int 
 file_worker_join(file_worker_t* this);
 
-
+#endif
