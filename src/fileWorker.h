@@ -32,7 +32,7 @@ typedef struct _file_worker_t file_worker_t;
 /**
  * Create a new file worker
  */
-file_worker_t* 
+file_worker_t*
 file_worker_new(char* file, file_worker_t* peer);
 
 /**
@@ -44,14 +44,14 @@ file_worker_free(file_worker_t* this);
 /**
  * Kick off a file worker thread
  */
-int 
+int
 file_worker_start(file_worker_t* this);
 
 
 /**
  * Join a worker thread
  */
-int 
+int
 file_worker_join(file_worker_t* this);
 
 #endif
