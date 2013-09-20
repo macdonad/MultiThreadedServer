@@ -3,13 +3,11 @@
 //sys
 #include <pthread.h>
 #include <stdio.h>
-#include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 #include <stdbool.h>
-#include <sys/time.h>
 
 //src
 #include "multTServer.h"
@@ -232,3 +230,5 @@ print_server_stats(int worker_count, double total_time_taken)
   printf("total_time_taken: %f\n", total_time_taken);
   printf("Retrieved %d files, Average time: %f seconds\n", worker_count, (total_time_taken / (double)worker_count));
 }
+
+/* multTServer.c ends here */

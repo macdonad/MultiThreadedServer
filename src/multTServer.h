@@ -29,6 +29,7 @@
 #define ARRLOC(type, size) calloc(size, sizeof(type))
 
 #define ON_ERROR(expr) if(expr != 0)
+
 /* **************************************************************
  * Prototypes
  * ************************************************************** */

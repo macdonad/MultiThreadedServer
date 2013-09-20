@@ -1,3 +1,5 @@
+// fileWorker.h
+
 #ifndef _FILE_WORKER_H_
 #define _FILE_WORKER_H_
 
@@ -55,3 +57,5 @@ int
 file_worker_join(file_worker_t* this);
 
 #endif
+
+/* fileWorker.h ends here */
