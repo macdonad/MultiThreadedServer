@@ -29,7 +29,7 @@
 struct _file_worker_t
 {
   pthread_t id;
-  time_t time_taken;
+  double time_taken;
   char* filename;
   bool active;
   struct _file_worker_t* peer;
@@ -96,13 +96,6 @@ file_worker_free(file_worker_t* this)
 }
 
 
-bool 
-file_worker_has_peer(file_worker_t* this)
-{
-  return (this && this->peer);
-}
-
-
 /* **************************************************************
  * Globals
  * ************************************************************** */
@@ -118,12 +111,6 @@ char* input_buffer;
  * Global access time
  */
 /* TODO */
-
-
-/**
- * Global request counter
- */
-int total_requests;
 
 
 /**
@@ -189,9 +176,12 @@ handle_sigint(int sig)
     sigint_count++;
     printf("\nBeginning shutdown\n");
     file_worker_t* worker = last_worker;
-    
-    while (file_worker_has_peer(worker))
+    int worker_count = 0;
+    double total_time_taken = 0;
+    while (worker)
       {
+	worker_count++;
+	total_time_taken += worker->time_taken;
 	ON_ERROR(file_worker_join(worker)) 
 	  {
 	    printf("Error joining worker for \"%s\"\n", 
@@ -206,6 +196,9 @@ handle_sigint(int sig)
     /* **************************************************************
      * TODO: Print usage stats here
      * ************************************************************** */
+    printf("Retrieved %d files, Average time: %.2f seconds\n", 
+	   worker_count, 
+	   (total_time_taken / worker_count));
     
     free(input_buffer);
     exit(0);
@@ -232,29 +225,20 @@ handle_sigint(int sig)
 void*
 worker_function(void* arg)
 {
-  /* **************************************************************
-   * TODO: increase total recieve count
-   * ************************************************************** */
-  
-  
-  /* **************************************************************
-   * TODO: Start time
-   * ************************************************************** */
-  
   file_worker_t* this = (file_worker_t*) arg;
-  int rand_val = rand() % 10;
-  
-  sleep((rand_val >= 2) ? 1 : 7 + (rand() % 4));
+
+  int sleep_time = ((rand() % 10) >= 2) ? 1 : 7 + (rand() % 4);
+
+  sleep(sleep_time);
   
   this->active = false;
+  
   
   printf("Thread: [%u] retrieved: %s\n",
 	 // this is silly
 	 (unsigned int)(this->id), this->filename);
-  
-  /* **************************************************************
-   * TODO:Record total time
-   * ************************************************************** */
-  
+
+  this->time_taken = (double)sleep_time;
+
   return NULL;
 }
