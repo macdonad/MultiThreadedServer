@@ -1,5 +1,6 @@
 // multTServer.c
 
+//sys
 #include <pthread.h>
 #include <stdio.h>
 #include <errno.h>
@@ -10,40 +11,12 @@
 #include <stdbool.h>
 #include <sys/time.h>
 
+//src
 #include "multTServer.h"
-
-
-/* **************************************************************
- * File worker type
- * ************************************************************** */
-
-
-/**
- * File worker struct type.
- *
- * ID: Cooresponding thread ID
- * FILENAME: Retrieval job file
- * ACTIVE: False if the retrieval completed or failed
- * PEER: Pointer to the other most recent worker created.
- */
-struct _file_worker_t
-{
-  pthread_t id;
-  double time_taken;
-  char* filename;
-  bool active;
-  struct _file_worker_t* peer;
-};
-
-
-/**
- * File worker type.
- */
-typedef struct _file_worker_t file_worker_t;
-
+#include "fileWorker.h"
 
 /* **************************************************************
- * File worker methods
+ * File worker implementation
  * ************************************************************** */
 
 /**
@@ -59,6 +32,20 @@ file_worker_new(char* file, file_worker_t* peer)
   memcpy(worker->filename, file, filename_size);
   worker->peer = peer;
   return worker;
+}
+
+
+/**
+ * Free a file worker
+ */
+void
+file_worker_free(file_worker_t* this)
+{
+  if (this) 
+    {
+      if (this->filename && *(this->filename)) free(this->filename);
+      free(this);
+    }
 }
 
 
@@ -83,23 +70,9 @@ file_worker_join(file_worker_t* this)
 }
 
 
-/**
- * Free a file worker
- */
-void
-file_worker_free(file_worker_t* this)
-{
-  if (this) {
-    if (this->filename && *(this->filename)) free(this->filename);
-    free(this);
-  }
-}
-
-
 /* **************************************************************
  * Globals
  * ************************************************************** */
-
 
 /**
  * Input buffer
@@ -108,43 +81,41 @@ char* input_buffer;
 
 
 /**
- * Global access time
- */
-/* TODO */
-
-
-/**
  * The most recently started worker.
  */
 file_worker_t* last_worker;
 
 
+/* **************************************************************
+ * Functions
+ * ************************************************************** */
+
 /**
  * Main
  */
 int
-main()
+main(void)
 {
   // resource setup
   signal(SIGINT, handle_sigint);
   input_buffer = ARRLOC(char*,  INPUT_BUFFER_SIZE);
   
   // main server loop
-  while(true) {
-    read_filename();
-    file_worker_t* worker = file_worker_new(input_buffer, last_worker);
-
-    ON_ERROR(file_worker_start(worker)) 
-      {
-	printf("Error starting worker for \"%s\"\n", 
-	       (worker && worker->filename) ? worker->filename : "unknown");
-	file_worker_free(worker);
-      } 
-    else 
-      {
-	last_worker = worker;
-      }
-  }
+  while(true) 
+    {
+      read_filename();
+      file_worker_t* worker = file_worker_new(input_buffer, last_worker);
+      ON_ERROR(file_worker_start(worker)) 
+	{
+	  printf("Error starting worker for \"%s\"\n", 
+		 (worker && worker->filename) ? worker->filename : "unknown");
+	  file_worker_free(worker);
+	} 
+      else 
+	{
+	  last_worker = worker;
+	}
+    }
   return 0;
 }
 
@@ -170,48 +141,63 @@ void
 handle_sigint(int sig)
 {
   signal(SIGINT, handle_sigint);
+  
+  /*
+   * Keeps track of the number of sigints received.
+   * 
+   * After 1: begin joining worker threads and exit nicely
+   * After 2: prompt user for force quit confirmation
+   * After 3: kill the program immediately
+   */
   static int sigint_count = 0;
+
   switch(sigint_count) {
+    
+    //first C-c
   case 0:  {
     sigint_count++;
+    
     printf("\nBeginning shutdown\n");
+    
     file_worker_t* worker = last_worker;
     int worker_count = 0;
     double total_time_taken = 0;
+    
     while (worker)
       {
-	worker_count++;
-	total_time_taken += worker->time_taken;
 	ON_ERROR(file_worker_join(worker)) 
 	  {
-	    printf("Error joining worker for \"%s\"\n", 
-		   (worker && worker->filename) ? worker->filename : "unknown");
-	    
+	    printf("Error joining worker for \"%s\"\n", (worker && worker->filename) ? worker->filename : "unknown");
+	  } 
+	else 
+	  {
+	    worker_count++;
+	    total_time_taken += worker->time_taken;
 	  }
 	file_worker_t* current = worker;
 	worker = worker->peer;
 	file_worker_free(current);
       }
-    
-    /* **************************************************************
-     * TODO: Print usage stats here
-     * ************************************************************** */
-    printf("Retrieved %d files, Average time: %.2f seconds\n", 
-	   worker_count, 
-	   (total_time_taken / worker_count));
+
+    print_server_stats(worker_count, total_time_taken);
     
     free(input_buffer);
     exit(0);
   }
-  case 1: {
-    sigint_count ++;
-    printf("\nPress C-c again to force quit\n");
-    break;
-  } 
-  default: {
-    free(input_buffer);
-    exit(0);
-  }
+    // after one C-c
+  case 1: 
+    {
+      signal(SIGINT, handle_sigint);
+      sigint_count ++;
+      printf("\nPress C-c again to force quit\n");
+      break;
+    } 
+    // after 2+ C-c
+  default: 
+    {
+      free(input_buffer);
+      exit(0);
+    }
   }
 }
 
@@ -226,19 +212,22 @@ void*
 worker_function(void* arg)
 {
   file_worker_t* this = (file_worker_t*) arg;
-
-  int sleep_time = ((rand() % 10) >= 2) ? 1 : 7 + (rand() % 4);
+  double sleep_time = ((rand() % 10) >= 2) ? 1 : 7 + (rand() % 4);
 
   sleep(sleep_time);
-  
+  this->time_taken = sleep_time;
   this->active = false;
-  
-  
-  printf("Thread: [%u] retrieved: %s\n",
-	 // this is silly
-	 (unsigned int)(this->id), this->filename);
 
-  this->time_taken = (double)sleep_time;
-
+  printf("Thread: [%u] retrieved: %s\n", CAST_UNSIGNED(this->id), this->filename);
   return NULL;
+}
+
+/**
+ * Print server statistics 
+ */
+void 
+print_server_stats(int worker_count, double total_time_taken) 
+{
+  printf("total_time_taken: %f\n", total_time_taken);
+  printf("Retrieved %d files, Average time: %f seconds\n", worker_count, (total_time_taken / (double)worker_count));
 }
