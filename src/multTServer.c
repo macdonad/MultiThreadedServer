@@ -160,7 +160,7 @@ void
 handle_sigint(int sig)
 {
   signal(SIGINT, handle_sigint);
-
+  
   /*
    * Keeps track of the number of sigints received.
    *
@@ -169,20 +169,20 @@ handle_sigint(int sig)
    * After 3: kill the program immediately
    */
   static int sigint_count = 0;
-
+  
   switch(sigint_count)
     {
-
+      
       //first C-c
     case 0:  {
       sigint_count++;
-
+      
       printf("\nBeginning shutdown\n");
-
+      
       file_worker_t* worker = last_worker;
       int worker_count = 0;
       double total_time_taken = 0;
-
+      
       while (worker)
 	{
 	  ON_ERROR(file_worker_join(worker))
@@ -198,9 +198,9 @@ handle_sigint(int sig)
 	  worker = worker->peer;
 	  file_worker_free(current);
 	}
-
+      
       print_server_stats(worker_count, total_time_taken);
-
+      
       free(input_buffer);
       exit(0);
     }
@@ -241,6 +241,7 @@ worker_function(void* arg)
   printf("Thread: [%u] retrieved: %s\n", CAST_UNSIGNED_INT(this->id), this->filename);
   return NULL;
 }
+
 
 /**
  * Print server statistics
