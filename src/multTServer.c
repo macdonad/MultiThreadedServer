@@ -102,16 +102,23 @@ main(void)
   while(true)
     {
       read_filename();
-      file_worker_t* worker = file_worker_new(input_buffer, last_worker);
-      ON_ERROR(file_worker_start(worker))
+      if (!str_is_whitespace(input_buffer))
 	{
-	  printf("Error starting worker for \"%s\"\n",
-		 (worker && worker->filename) ? worker->filename : "unknown");
-	  file_worker_free(worker);
-	}
+	  file_worker_t* worker = file_worker_new(input_buffer, last_worker);
+	  ON_ERROR(file_worker_start(worker))
+	    {
+	      printf("Error starting worker for \"%s\"\n",
+		     (worker && worker->filename) ? worker->filename : "unknown");
+	      file_worker_free(worker);
+	    }
+	  else
+	    {
+	      last_worker = worker;
+	    }
+	} 
       else
 	{
-	  last_worker = worker;
+	  printf("No file given...\n");
 	}
     }
   return 0;
@@ -129,6 +136,20 @@ read_filename(void)
   if (newline_pos != NULL) *newline_pos = '\0';
 }
 
+/**
+ * String is only whitespace
+ */
+bool 
+str_is_whitespace(char* str) 
+{
+  char* c;
+  for (c = str; c && *c; c++) {
+    if (!(*c == ' ' || *c == '\t' || *c == '\n')) {
+      return false;
+    }
+  }
+  return true;
+}
 
 /**
  * Handle a C-c

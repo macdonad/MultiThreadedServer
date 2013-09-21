@@ -40,6 +40,11 @@
 void read_filename(void);
 
 /**
+ * Is a string only whitespace characters?
+ */
+bool str_is_whitespace(char* str);
+
+/**
  * Handle a C-c
  */
 void handle_sigint(int sig);
