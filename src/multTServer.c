@@ -121,7 +121,7 @@ main(void)
 	  printf("No file given...\n");
 	}
     }
-  return 0;
+  pthread_exit(NULL);
 }
 
 
@@ -239,7 +239,7 @@ worker_function(void* arg)
   this->active = false;
 
   printf("Thread: [%u] retrieved: %s\n", CAST_UNSIGNED_INT(this->id), this->filename);
-  return NULL;
+  pthread_exit(NULL);
 }
 
 
