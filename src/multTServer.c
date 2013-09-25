@@ -167,20 +167,18 @@ handle_sigint(int sig)
   /*
    * Keeps track of the number of sigints received.
    *
-   * After 1: begin joining worker threads and exit nicely
-   * After 2: prompt user for force quit confirmation
-   * After 3: kill the program immediately
+   * first  C-c : begin joining worker threads and exit nicely, prompt user for force quit confirmation
+   * second C-c : kill the program immediately
    */
   static int sigint_count = 0;
 
   switch(sigint_count)
     {
-
       //first C-c
     case 0:  {
       sigint_count++;
 
-      printf("\nBeginning shutdown\n");
+      printf("\nBeginning shutdown... Press C-c again to force quit\n");
 
       file_worker_t* worker = last_worker;
       int worker_count = 0;
@@ -204,21 +202,13 @@ handle_sigint(int sig)
 	}
 
       print_server_stats(worker_count, total_time_taken);
-
       free(input_buffer);
       exit(0);
     }
       // after one C-c
-    case 1:
-      {
-	signal(SIGINT, handle_sigint);
-	sigint_count ++;
-	printf("\nPress C-c again to force quit\n");
-	break;
-      }
-      // after 2+ C-c
     default:
       {
+	puts("\n");
 	free(input_buffer);
 	exit(0);
       }
