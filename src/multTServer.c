@@ -88,6 +88,7 @@ file_worker_t* last_worker;
  * Functions
  * ************************************************************** */
 
+
 /**
  * Main
  */
@@ -115,7 +116,7 @@ main(void)
 	    {
 	      last_worker = worker;
 	    }
-	} 
+	}
       else
 	{
 	  printf("No file given...\n");
@@ -136,11 +137,12 @@ read_filename(void)
   if (newline_pos != NULL) *newline_pos = '\0';
 }
 
+
 /**
  * String is only whitespace
  */
-bool 
-str_is_whitespace(char* str) 
+bool
+str_is_whitespace(char* str)
 {
   char* c;
   for (c = str; c && *c; c++) {
@@ -151,6 +153,7 @@ str_is_whitespace(char* str)
   return true;
 }
 
+
 /**
  * Handle a C-c
  *
@@ -160,7 +163,7 @@ void
 handle_sigint(int sig)
 {
   signal(SIGINT, handle_sigint);
-  
+
   /*
    * Keeps track of the number of sigints received.
    *
@@ -169,25 +172,26 @@ handle_sigint(int sig)
    * After 3: kill the program immediately
    */
   static int sigint_count = 0;
-  
+
   switch(sigint_count)
     {
-      
+
       //first C-c
     case 0:  {
       sigint_count++;
-      
+
       printf("\nBeginning shutdown\n");
-      
+
       file_worker_t* worker = last_worker;
       int worker_count = 0;
       double total_time_taken = 0;
-      
+
       while (worker)
 	{
 	  ON_ERROR(file_worker_join(worker))
 	    {
-	      printf("Error joining worker for \"%s\"\n", (worker && worker->filename) ? worker->filename : "unknown");
+	      printf("Error joining worker for \"%s\"\n",
+		     (worker && worker->filename) ? worker->filename : "unknown");
 	    }
 	  else
 	    {
@@ -198,9 +202,9 @@ handle_sigint(int sig)
 	  worker = worker->peer;
 	  file_worker_free(current);
 	}
-      
+
       print_server_stats(worker_count, total_time_taken);
-      
+
       free(input_buffer);
       exit(0);
     }
@@ -250,7 +254,9 @@ void
 print_server_stats(int worker_count, double total_time_taken)
 {
   printf("total_time_taken: %f\n", total_time_taken);
-  printf("Retrieved %d files, Average time: %f seconds\n", worker_count, (total_time_taken / (double)worker_count));
+  printf("Retrieved %d files, Average time: %f seconds\n",
+	 worker_count,
+	 (total_time_taken / (double)worker_count));
 }
 
 /* multTServer.c ends here */
