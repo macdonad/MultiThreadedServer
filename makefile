@@ -8,7 +8,7 @@ exec = $(buildDir)/multTServer
 mainSource = $(srcDir)/multTServer.c
 
 $(exec): bin $(mainSource) sources
-	gcc -lpthread -Wall -o $(exec) $(mainSource)
+	gcc -O2 -lpthread -Wall -o $(exec) $(mainSource)
 
 sources: $(srcDir)/*.c $(srcDir)/*.h
 
